@@ -7,6 +7,17 @@ news ticker) and writes one 1024x1024 PNG to /output/entry.png
 (or $MAKEFUN_OUTPUT_DIR/entry.png).
 
 Deterministic: two runs write byte-identical files.
+
+Fix pass (27 Nov 2026, review otak kedua): footer corrected to
+"Friday's paper - reports from 26-27 November 2026" + Capitol Wire
+added to sources; tile bodies shortened to one key fact + one
+consequence at larger type with a source+date line per tile and the
+content centred vertically; EUROPE headline "EU SUMMIT: NO DEAL ON
+DAY ONE" (no unverified "12 hours"); Macy's "postponed by the storm
+to Saturday"; the 70% figure kept only in the hero facts box (dropped
+from the caption, replaced with the verified missile-delays quote);
+unverified "Abu Dhabi talks" line removed from the facts box; ticker
+stamped "as of Fri 08:59 MYT" (STOXX dropped to fit).
 """
 import os
 import struct
@@ -228,7 +239,7 @@ class Canvas:
 
 
 # --------------------------------------------------------------------- font
-# Hand-drawn 5x7 bitmap font. Each glyph: 7 rows of 5 bits ('#' / '.').
+# Hand-drawn 5x7 bitmap font. Each glyph: 7 rows of 5 bits ('1' / '0').
 
 def _g(*rows):
     return tuple(int(ch == "1") for row in rows for ch in row)
@@ -374,6 +385,7 @@ def draw_para(cv, x, y, s, scale, color, max_w, leading=None):
         draw_text(cv, x, y + i * lh, ln, scale, color)
     return y + len(wrap_text(s, scale, max_w)) * lh
 
+
 # --------------------------------------------------------------- pictograms
 # Hand-drawn 56x56 tile icons, ink colour on paper.
 
@@ -453,36 +465,45 @@ GREY = (110, 106, 96)
 WHITE = (255, 255, 255)
 BLACK = (12, 12, 12)
 
+# Tiles: (kicker, headline, body, source+date, pictogram).
+# Body = one key fact + one consequence, wrapped at scale 2 (24 chars
+# per line over the 292 px body width); each body is 4 lines.
 TILES = [
     ("GULF", "DRONES KILL 2\nITALIANS IN KUWAIT",
-     "Iranian drones hit an air-defence station in Kuwait, killing two "
-     "Italian technicians. Rome protests; Tehran denies any role.",
+     "Iranian drones hit a Kuwait air-defence station. Two Italians "
+     "killed; Rome protests.",
+     "REUTERS · 26 NOV",
      pic_drone),
     ("GAZA", "10 KILLED AS GAZA\nSTRIKES GO ON",
-     "Israeli strikes kill 10 Palestinians, including a senior education "
-     "official, despite the year-old ceasefire.",
+     "Israeli strikes kill 10, a senior education official among them. "
+     "Ceasefire strained.",
+     "AP · 26 NOV",
      pic_rubble),
     ("MARKETS", "TOKYO PRICES AT\n16-MONTH HIGH",
-     "Core inflation hits 2.9%, firming the case for a Bank of Japan rate "
-     "rise. Brent holds near $96 as Gulf tension lifts oil.",
+     "Core inflation hits 2.9%, a 16-month high, firming the case for a "
+     "Bank of Japan rate rise.",
+     "CNA / NIKKEI ASIA · 27 NOV",
      pic_chart),
-    ("EUROPE", "EU SUMMIT ENDS\nWITH NO DEAL",
-     "Leaders leave Brussels after 12 hours with no agreement on the "
-     "1.58tn euro budget or a 45bn euro loan for Ukraine. Next try: 17-18 Dec.",
+    ("EUROPE", "EU SUMMIT: NO DEAL\nON DAY ONE",
+     "No deal after a day of talks on the €1.58tn budget or €45bn loan. "
+     "Next try: 17-18 Dec.",
+     "CAPITOL WIRE · 26 NOV",
      pic_eu),
     ("SPAIN", "TANKER SINKS OFF\nIBIZA, 1 DEAD",
-     "The Med Emre, carrying 7,000 tonnes of diesel, capsizes with 17 "
-     "aboard. Spain mounts a pollution watch; none seen yet.",
+     "Med Emre capsizes with 17 aboard, 7,000t of diesel. Spain mounts "
+     "a pollution watch.",
+     "REUTERS / BBC · 26 NOV",
      pic_ship),
     ("AMERICA", "BLACK FRIDAY\nAFTER THE STORM",
-     "Shoppers head out as US markets reopen for a half day; the 100th "
-     "Macy's parade, grounded by the storm, flies on Saturday.",
+     "Half-day trading on Wall St. The 100th Macy's parade, postponed "
+     "by the storm to Saturday.",
+     "AP · 27 NOV",
      pic_balloon),
 ]
 
-TICKER = ("BRENT $96.57  ·  GOLD $3,560.63  ·  DAX +2.08%  ·  STOXX +1.5%  ·  "
-          "FTSE +1.7%  ·  EURO $1.0961  ·  USD/JPY 159.33  ·  BLACK FRIDAY: "
-          "US MARKETS HALF DAY")
+TICKER = ("AS OF FRI 08:59 MYT  ·  BRENT $96.57  ·  GOLD $3,560.63  ·  "
+          "DAX +2.08%  ·  FTSE +1.7%  ·  EURO $1.0961  ·  USD/JPY 159.33  ·  "
+          "BLACK FRIDAY: US HALF DAY")
 
 
 def build():
@@ -508,9 +529,8 @@ def build():
     cv.blit_cover(hero, hw, hh, pic_x, pic_y, pic_w, pic_h, vbias=0.8)
     cv.rect(pic_x, pic_y, pic_w, pic_h, INK, 2)
     draw_para(cv, pic_x, pic_y + pic_h + 8,
-              "Air-defence trails over Kyiv at dusk. Ukraine says it now "
-              "downs 70% of Russia's fastest drones - but stocks of "
-              "interceptors are running low.",
+              "Air-defence trails over Kyiv at dusk. Delays in "
+              "anti-ballistic missiles 'cost lives', Zelensky tells the BBC.",
               1, GREY, pic_w, leading=10)
 
     hx = 656
@@ -528,8 +548,8 @@ def build():
     cv.rect(hx, 330, W - mx - hx, 72, INK, 1)
     draw_text(cv, hx + 10, 338, "70% OF RUSSIA'S FASTEST", 1, INK)
     draw_text(cv, hx + 10, 350, "DRONES DOWNED", 1, INK)
-    draw_text(cv, hx + 10, 366, "ABU DHABI TALKS: NO PROGRESS,", 1, INK)
-    draw_text(cv, hx + 10, 378, "RESUME IN DECEMBER", 1, INK)
+    draw_text(cv, hx + 10, 366, "KYIV: MISSILE DELAYS", 1, INK)
+    draw_text(cv, hx + 10, 378, "'COST LIVES' - ZELENSKY", 1, INK)
 
     # Facts strip
     cv.hline(mx, 446, W - 2 * mx, INK, 2)
@@ -538,18 +558,22 @@ def build():
                      2, RED)
     cv.hline(mx, 474, W - 2 * mx, INK, 1)
 
-    # Tiles: 3 x 2
+    # Tiles: 3 x 2. Content is centred vertically inside each 186 px
+    # tile: kicker at +18, headline at +36, body (scale 2) at +78,
+    # rule + source line at the foot so no tile ends in empty space.
     tw, th, gap = 312, 186, 16
-    for i, (kick, head, body, pic) in enumerate(TILES):
+    for i, (kick, head, body, src, pic) in enumerate(TILES):
         tx = mx + (i % 3) * (tw + gap)
         ty = 486 + (i // 3) * (th + gap)
         cv.rect(tx, ty, tw, th, INK, 1)
-        draw_text(cv, tx + 10, ty + 10, kick, 1, RED)
+        draw_text(cv, tx + 10, ty + 18, kick, 1, RED)
         pic(cv, tx + tw - 66, ty + 6, INK)
-        hy = ty + 30
+        hy = ty + 36
         for j, ln in enumerate(head.split("\n")):
             draw_text(cv, tx + 10, hy + j * 20, ln, 2, INK)
-        draw_para(cv, tx + 10, ty + 80, body, 1, INK, tw - 20, leading=10)
+        draw_para(cv, tx + 10, ty + 78, body, 2, INK, tw - 20, leading=16)
+        cv.hline(tx + 10, ty + 150, tw - 20, GREY, 1)
+        draw_text(cv, tx + 10, ty + 158, src, 1, GREY)
 
     # Ticker
     cv.fill(mx, 896, W - 2 * mx, 30, BLACK)
@@ -557,11 +581,12 @@ def build():
 
     # Footer
     draw_text_center(cv, W // 2, 938,
-                     "Sources: BBC - Reuters - AP - CNA - Nikkei Asia",
+                     "Sources: BBC - Reuters - AP - CNA - Nikkei Asia - "
+                     "Capitol Wire",
                      1, GREY)
     draw_text_center(cv, W // 2, 952,
-                     "All stories from Friday 27 November 2026 - Built by an "
-                     "AI agent for make.fun",
+                     "Friday's paper — reports from 26–27 November 2026 - "
+                     "Built by an AI agent for make.fun",
                      1, GREY)
     return cv
 
